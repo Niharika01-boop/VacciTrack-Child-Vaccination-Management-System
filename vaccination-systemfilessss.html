@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VacciTrack – Child Vaccination Management System</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  :root {
+    --primary: #0a6e5e;
+    --primary-light: #e6f4f1;
+    --primary-mid: #12a08a;
+    --accent: #f4a022;
+    --accent-light: #fef4e3;
+    --danger: #e05050;
+    --danger-light: #fdeaea;
+    --info: #3b82f6;
+    --info-light: #eff6ff;
+    --sidebar-bg: #071f1b;
+    --sidebar-text: #a8ccc8;
+    --sidebar-active: #12a08a;
+    --body-bg: #f0f5f4;
+    --card-bg: #ffffff;
+    --text-main: #1a2e2b;
+    --text-muted: #6b8c88;
+    --border: #d4e8e4;
+    --shadow: 0 2px 16px rgba(10,110,94,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--body-bg); color: var(--text-main); min-height: 100vh; }
+  h1,h2,h3,h4 { font-family: 'Fraunces', serif; }
+
+  /* AUTH */
+  #authPage { min-height: 100vh; background: linear-gradient(135deg, #071f1b 0%, #0a6e5e 60%, #12a08a 100%); display: flex; align-items: center; justify-content: center; }
+  .auth-card { background: white; border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 420px; box-shadow: 0 24px 80px rgba(0,0,0,0.3); }
+  .auth-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+  .auth-logo-icon { width: 48px; height: 48px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; }
+  .auth-logo h2 { font-size: 22px; color: var(--primary); margin: 0; }
+  .auth-logo span { font-size: 12px; color: var(--text-muted); display: block; font-family: 'DM Sans', sans-serif; font-weight: 400; }
+  .auth-card h3 { font-size: 28px; color: var(--text-main); margin-bottom: 6px; }
+  .auth-card p { color: var(--text-muted); margin-bottom: 28px; font-size: 14px; }
+  .form-label { font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
+  .form-control, .form-select { border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 14px; font-family: 'DM Sans', sans-serif; transition: border-color .2s; }
+  .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(10,110,94,0.1); outline: none; }
+  .btn-primary-custom { background: var(--primary); color: white; border: none; border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 600; width: 100%; cursor: pointer; transition: background .2s, transform .1s; }
+  .btn-primary-custom:hover { background: #085a4d; transform: translateY(-1px); }
+  .demo-hint { background: var(--primary-light); border-radius: 10px; padding: 12px 16px; font-size: 12px; color: var(--primary); margin-top: 16px; }
+  .demo-hint strong { display: block; margin-bottom: 4px; }
+
+  /* LAYOUT */
+  #appPage { display: none; min-height: 100vh; }
+  .sidebar { width: 260px; background: var(--sidebar-bg); min-height: 100vh; position: fixed; top: 0; left: 0; z-index: 100; display: flex; flex-direction: column; transition: transform .3s; }
+  .sidebar-brand { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .sidebar-brand h4 { color: white; font-size: 20px; margin: 0; }
+  .sidebar-brand span { color: var(--sidebar-text); font-size: 12px; font-family: 'DM Sans',sans-serif; }
+  .sidebar-brand-icon { width: 36px; height: 36px; background: var(--primary-mid); border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: white; margin-right: 10px; }
+  .sidebar-nav { padding: 16px 12px; flex: 1; }
+  .nav-section-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: rgba(168,204,200,0.4); text-transform: uppercase; padding: 8px 12px 4px; margin-top: 8px; }
+  .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 10px; color: var(--sidebar-text); text-decoration: none; font-size: 14px; font-weight: 500; transition: all .2s; margin-bottom: 2px; }
+  .sidebar-nav a i { width: 18px; text-align: center; font-size: 15px; }
+  .sidebar-nav a:hover { background: rgba(255,255,255,0.06); color: white; }
+  .sidebar-nav a.active { background: var(--primary); color: white; }
+  .sidebar-user { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.07); }
+  .sidebar-user .user-avatar { width: 36px; height: 36px; background: var(--primary-mid); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
+  .sidebar-user .user-info { font-size: 13px; color: white; font-weight: 600; }
+  .sidebar-user .user-role { font-size: 11px; color: var(--sidebar-text); }
+  .main-content { margin-left: 260px; padding: 28px 32px; min-height: 100vh; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .topbar-title h3 { font-size: 24px; color: var(--text-main); margin: 0; }
+  .topbar-title p { color: var(--text-muted); font-size: 13px; font-family: 'DM Sans',sans-serif; margin: 0; }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* CARDS */
+  .stat-card { background: var(--card-bg); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; transition: transform .2s; }
+  .stat-card:hover { transform: translateY(-2px); }
+  .stat-card .stat-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px; }
+  .stat-card .stat-value { font-size: 32px; font-weight: 700; font-family: 'Fraunces',serif; line-height: 1; margin-bottom: 4px; }
+  .stat-card .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+  .stat-card .stat-bg { position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.04; }
+  .card-custom { background: var(--card-bg); border-radius: 16px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+  .card-custom .card-header-custom { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-custom .card-header-custom h5 { font-size: 16px; margin: 0; color: var(--text-main); }
+  .card-body-custom { padding: 24px; }
+
+  /* TABLE */
+  .table-custom { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .table-custom thead th { background: var(--body-bg); padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+  .table-custom tbody tr { border-bottom: 1px solid rgba(212,232,228,0.5); transition: background .15s; }
+  .table-custom tbody tr:hover { background: var(--primary-light); }
+  .table-custom tbody td { padding: 14px 16px; vertical-align: middle; }
+  .badge-custom { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-success { background: #e6f9f0; color: #1a7a4a; }
+  .badge-warning { background: #fef4e3; color: #c07a10; }
+  .badge-danger { background: var(--danger-light); color: var(--danger); }
+  .badge-info { background: var(--info-light); color: var(--info); }
+  .badge-secondary { background: #f0f0f0; color: #666; }
+
+  /* BUTTONS */
+  .btn-sm-custom { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; transition: all .15s; display: inline-flex; align-items: center; gap: 5px; }
+  .btn-green { background: var(--primary-light); color: var(--primary); }
+  .btn-green:hover { background: var(--primary); color: white; }
+  .btn-orange { background: var(--accent-light); color: #c07a10; }
+  .btn-orange:hover { background: var(--accent); color: white; }
+  .btn-red { background: var(--danger-light); color: var(--danger); }
+  .btn-red:hover { background: var(--danger); color: white; }
+  .btn-blue { background: var(--info-light); color: var(--info); }
+  .btn-blue:hover { background: var(--info); color: white; }
+  .btn-primary-sm { background: var(--primary); color: white; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; transition: background .2s; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-primary-sm:hover { background: #085a4d; }
+
+  /* FORM */
+  .form-group { margin-bottom: 18px; }
+  .section-form { background: var(--card-bg); border-radius: 16px; padding: 28px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+
+  /* ALERTS */
+  .alert-custom { padding: 14px 18px; border-radius: 12px; font-size: 13px; font-weight: 500; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .alert-success { background: #e6f9f0; color: #1a7a4a; border: 1px solid #b3ecd1; }
+  .alert-error { background: var(--danger-light); color: var(--danger); border: 1px solid #f5b8b8; }
+  .alert-warning { background: var(--accent-light); color: #c07a10; border: 1px solid #fbd9a0; }
+
+  /* VACCINATION PROGRESS */
+  .vacc-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .vacc-item:last-child { border-bottom: none; }
+  .vacc-name { font-weight: 600; font-size: 14px; color: var(--text-main); }
+  .vacc-due { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .progress-bar-custom { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; width: 100px; }
+  .progress-fill { height: 100%; background: var(--primary-mid); border-radius: 3px; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 999; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: white; border-radius: 20px; padding: 32px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 80px rgba(0,0,0,0.2); animation: modalIn .2s ease; }
+  @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-box h4 { font-size: 20px; margin-bottom: 20px; color: var(--text-main); }
+  .modal-close { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); margin-top: -4px; }
+
+  /* SEARCH */
+  .search-box { position: relative; }
+  .search-box input { padding-left: 38px; border-radius: 10px; border: 1.5px solid var(--border); font-size: 14px; padding-top: 10px; padding-bottom: 10px; background: white; width: 260px; font-family: 'DM Sans',sans-serif; }
+  .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(10,110,94,0.1); outline: none; }
+  .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; }
+
+  /* UPCOMING */
+  .upcoming-item { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .upcoming-item:last-child { border-bottom: none; }
+  .upcoming-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .upcoming-child { font-weight: 600; font-size: 13px; }
+  .upcoming-vaccine { font-size: 12px; color: var(--text-muted); }
+  .upcoming-date { margin-left: auto; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
+
+  /* SIDEBAR COLLAPSE */
+  .sidebar-toggle { display: none; }
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main-content { margin-left: 0; padding: 20px 16px; }
+    .sidebar-toggle { display: flex; }
+  }
+
+  /* PAGE SECTIONS */
+  .page-section { display: none; }
+  .page-section.active { display: block; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* VACCINE SCHEDULE TABLE */
+  .schedule-age-badge { display: inline-block; background: var(--primary-light); color: var(--primary); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+
+  /* CHILD DETAIL */
+  .detail-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin-bottom: 3px; }
+  .detail-value { font-size: 14px; font-weight: 600; color: var(--text-main); }
+
+  /* REPORT */
+  .report-bar { height: 28px; border-radius: 6px; background: var(--primary); transition: width .5s; display: flex; align-items: center; padding-left: 10px; color: white; font-size: 12px; font-weight: 600; min-width: 30px; }
+
+  select.form-select { appearance: auto; }
+</style>
+</head>
+<body>
+
+<!-- AUTH PAGE -->
+<div id="authPage">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><i class="fas fa-syringe"></i></div>
+      <div>
+        <h2>VacciTrack</h2>
+        <span>Child Vaccination Management System</span>
+      </div>
+    </div>
+    <h3>Welcome back</h3>
+    <p>Sign in to manage vaccination records</p>
+    <div id="authError" class="alert-custom alert-error" style="display:none"><i class="fas fa-exclamation-circle"></i> <span id="authErrorMsg"></span></div>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input type="text" class="form-control" id="loginUsername" placeholder="Enter username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-control" id="loginPassword" placeholder="Enter password">
+    </div>
+    <button class="btn-primary-custom mt-2" onclick="doLogin()"><i class="fas fa-sign-in-alt me-2"></i>Sign In</button>
+  </div>
+</div>
+
+<!-- APP PAGE -->
+<div id="appPage">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="d-flex align-items-center">
+        <div class="sidebar-brand-icon"><i class="fas fa-syringe"></i></div>
+        <div>
+          <h4 style="font-size:17px">VacciTrack</h4>
+          <span style="font-size:11px;color:var(--sidebar-text);font-family:'DM Sans',sans-serif">Management System</span>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="#" class="active" onclick="showPage('dashboard',this)"><i class="fas fa-th-large"></i> Dashboard</a>
+      <a href="#" onclick="showPage('register',this)"><i class="fas fa-child"></i> Register Child</a>
+      <a href="#" onclick="showPage('records',this)"><i class="fas fa-notes-medical"></i> Vaccination Records</a>
+      <a href="#" onclick="showPage('schedule',this)"><i class="fas fa-calendar-alt"></i> Schedule</a>
+      <a href="#" onclick="showPage('search',this)"><i class="fas fa-search"></i> Search & Records</a>
+      <a href="#" onclick="showPage('reminders',this)"><i class="fas fa-bell"></i> Email Reminders</a>
+      <div class="nav-section-label" id="adminNavLabel">Admin</div>
+      <a href="#" id="adminUsersLink" onclick="showPage('adminUsers',this)"><i class="fas fa-users-cog"></i> Manage Users</a>
+      <a href="#" id="adminVaccinesLink" onclick="showPage('adminVaccines',this)"><i class="fas fa-vials"></i> Manage Vaccines</a>
+      <a href="#" id="adminReportsLink" onclick="showPage('reports',this)"><i class="fas fa-chart-bar"></i> Reports</a>
+      <div class="nav-section-label">Account</div>
+      <a href="#" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+    <div class="sidebar-user d-flex align-items-center gap-2">
+      <div class="user-avatar" id="sidebarAvatar">A</div>
+      <div>
+        <div class="user-info" id="sidebarName">Admin User</div>
+        <div class="user-role" id="sidebarRole">Administrator</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title">
+        <h3 id="pageTitle">Dashboard</h3>
+        <p id="pageSubtitle">Overview of vaccination activities</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="sidebar-toggle btn-primary-sm" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+        <div id="globalAlert" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page-section active" id="sec-dashboard">
+      <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#e6f4f1;color:var(--primary)"><i class="fas fa-child"></i></div>
+            <div class="stat-value" style="color:var(--primary)" id="statChildren">0</div>
+            <div class="stat-label">Registered Children</div>
+            <div class="stat-bg"><i class="fas fa-child"></i></div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#e6f9f0;color:#1a7a4a"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-value" style="color:#1a7a4a" id="statCompleted">0</div>
+            <div class="stat-label">Completed Vaccinations</div>
+            <div class="stat-bg"><i class="fas fa-check-circle"></i></div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--accent-light);color:#c07a10"><i class="fas fa-clock"></i></div>
+            <div class="stat-value" style="color:#c07a10" id="statPending">0</div>
+            <div class="stat-label">Pending Vaccinations</div>
+            <div class="stat-bg"><i class="fas fa-clock"></i></div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:var(--info-light);color:var(--info)"><i class="fas fa-bell"></i></div>
+            <div class="stat-value" style="color:var(--info)" id="statUpcoming">0</div>
+            <div class="stat-label">Due This Week</div>
+            <div class="stat-bg"><i class="fas fa-bell"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERTS -->
+      <div id="dashboardAlerts" class="mb-4"></div>
+
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="card-custom">
+            <div class="card-header-custom">
+              <h5><i class="fas fa-list-ul me-2" style="color:var(--primary)"></i>Recent Registrations</h5>
+              <button class="btn-sm-custom btn-green" onclick="showPage('register',null)"><i class="fas fa-plus"></i> Add New</button>
+            </div>
+            <div class="card-body-custom p-0">
+              <table class="table-custom">
+                <thead><tr><th>Child Name</th><th>Age</th><th>Guardian</th><th>Status</th></tr></thead>
+                <tbody id="dashRecentTable"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted)">No children registered yet</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="card-custom">
+            <div class="card-header-custom">
+              <h5><i class="fas fa-calendar-check me-2" style="color:var(--accent)"></i>Upcoming Vaccinations</h5>
+            </div>
+            <div class="card-body-custom" id="upcomingList" style="max-height:320px;overflow-y:auto">
+              <div style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px">No upcoming vaccinations</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTER CHILD -->
+    <div class="page-section" id="sec-register">
+      <div class="section-form">
+        <div class="d-flex align-items-center gap-3 mb-24" style="margin-bottom:24px">
+          <div style="width:44px;height:44px;background:var(--primary-light);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:20px"><i class="fas fa-child"></i></div>
+          <div>
+            <h4 style="font-size:18px;margin:0">Register New Child</h4>
+            <p style="font-size:13px;color:var(--text-muted);margin:0">Fill in the child's details to begin tracking</p>
+          </div>
+        </div>
+        <div id="registerAlert" style="display:none"></div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Child's Full Name *</label>
+              <input type="text" class="form-control" id="regName" placeholder="e.g. John Doe">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Date of Birth *</label>
+              <input type="date" class="form-control" id="regDob">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Gender *</label>
+              <select class="form-select" id="regGender">
+                <option value="">Select gender</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Parent / Guardian Name *</label>
+              <input type="text" class="form-control" id="regGuardian" placeholder="e.g. Jane Doe">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Phone Number *</label>
+              <input type="tel" class="form-control" id="regPhone" placeholder="e.g. +254712345678">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Parent / Guardian Email * <span style="font-size:11px;color:var(--primary);font-weight:400">(for vaccine reminders)</span></label>
+              <input type="email" class="form-control" id="regEmail" placeholder="e.g. parent@email.com">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Address</label>
+              <input type="text" class="form-control" id="regAddress" placeholder="e.g. 12 Main Street, City">
+            </div>
+          </div>
+        </div>
+        <div class="mt-3">
+          <button class="btn-primary-sm" onclick="registerChild()"><i class="fas fa-save"></i> Register Child</button>
+          <button class="btn-sm-custom btn-red ms-2" style="padding:10px 18px;font-size:14px" onclick="clearRegForm()"><i class="fas fa-times"></i> Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VACCINATION RECORDS -->
+    <div class="page-section" id="sec-records">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="recordsSearch" placeholder="Search child name..." oninput="renderRecords()">
+        </div>
+        <select class="form-select" id="recordsFilter" style="width:160px;font-size:13px" onchange="renderRecords()">
+          <option value="all">All Children</option>
+          <option value="complete">Fully Vaccinated</option>
+          <option value="partial">Partially Done</option>
+          <option value="none">Not Started</option>
+        </select>
+      </div>
+      <div class="card-custom">
+        <div class="card-header-custom"><h5><i class="fas fa-notes-medical me-2" style="color:var(--primary)"></i>Vaccination Records</h5></div>
+        <div class="card-body-custom p-0">
+          <table class="table-custom">
+            <thead><tr><th>ID</th><th>Child Name</th><th>Age</th><th>Guardian</th><th>Progress</th><th>Actions</th></tr></thead>
+            <tbody id="recordsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE PAGE -->
+    <div class="page-section" id="sec-schedule">
+      <div class="card-custom mb-3">
+        <div class="card-header-custom"><h5><i class="fas fa-calendar-alt me-2" style="color:var(--primary)"></i>Standard Vaccination Schedule</h5></div>
+        <div class="card-body-custom p-0">
+          <table class="table-custom">
+            <thead><tr><th>Vaccine</th><th>Age / Timing</th><th>Description</th><th>Doses</th></tr></thead>
+            <tbody id="scheduleTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH PAGE -->
+    <div class="page-section" id="sec-search">
+      <div class="section-form mb-4">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-5">
+            <label class="form-label">Search by Name or ID</label>
+            <input type="text" class="form-control" id="searchInput" placeholder="Type child name or ID..." oninput="doSearch()">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Gender Filter</label>
+            <select class="form-select" id="searchGender" onchange="doSearch()">
+              <option value="">All Genders</option>
+              <option>Male</option><option>Female</option><option>Other</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <button class="btn-primary-sm w-100" onclick="doSearch()"><i class="fas fa-search"></i> Search</button>
+          </div>
+        </div>
+      </div>
+      <div class="card-custom">
+        <div class="card-header-custom"><h5><i class="fas fa-search me-2" style="color:var(--primary)"></i>Search Results</h5></div>
+        <div class="card-body-custom p-0">
+          <table class="table-custom">
+            <thead><tr><th>ID</th><th>Name</th><th>DOB</th><th>Gender</th><th>Guardian</th><th>Phone</th><th>Actions</th></tr></thead>
+            <tbody id="searchTable"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">Enter a search term above</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN USERS -->
+    <div class="page-section" id="sec-adminUsers">
+      <div class="card-custom mb-3">
+        <div class="card-header-custom">
+          <h5><i class="fas fa-users-cog me-2" style="color:var(--primary)"></i>System Users</h5>
+          <button class="btn-primary-sm" onclick="openAddUserModal()"><i class="fas fa-plus"></i> Add User</button>
+        </div>
+        <div class="card-body-custom p-0">
+          <table class="table-custom">
+            <thead><tr><th>Username</th><th>Full Name</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="usersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN VACCINES -->
+    <div class="page-section" id="sec-adminVaccines">
+      <div class="card-custom mb-3">
+        <div class="card-header-custom">
+          <h5><i class="fas fa-vials me-2" style="color:var(--primary)"></i>Vaccine List</h5>
+          <button class="btn-primary-sm" onclick="openAddVaccineModal()"><i class="fas fa-plus"></i> Add Vaccine</button>
+        </div>
+        <div class="card-body-custom p-0">
+          <table class="table-custom">
+            <thead><tr><th>Vaccine Name</th><th>Age Given</th><th>Doses</th><th>Description</th><th>Actions</th></tr></thead>
+            <tbody id="vaccinesTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REMINDERS PAGE -->
+    <div class="page-section" id="sec-reminders">
+      <!-- EmailJS Setup Card -->
+      <div class="card-custom mb-4">
+        <div class="card-header-custom">
+          <h5><i class="fas fa-cog me-2" style="color:var(--primary)"></i>EmailJS Configuration</h5>
+          <span id="emailjsStatusBadge" class="badge-custom badge-secondary">Not Configured</span>
+        </div>
+        <div class="card-body-custom">
+          <div class="alert-custom alert-warning mb-3"><i class="fas fa-info-circle"></i> <span>To send real emails, create a <b>free account</b> at <a href="https://www.emailjs.com" target="_blank" style="color:inherit;font-weight:700">emailjs.com</a>, then paste your credentials below. <a href="#" onclick="showEmailjsHelp()" style="color:inherit;text-decoration:underline">How to set this up →</a></span></div>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Public Key (User ID)</label>
+              <input type="text" class="form-control" id="ejsPublicKey" placeholder="e.g. user_xxxxxxxxxxxx">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Service ID</label>
+              <input type="text" class="form-control" id="ejsServiceId" placeholder="e.g. service_xxxxxxx">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Template ID</label>
+              <input type="text" class="form-control" id="ejsTemplateId" placeholder="e.g. template_xxxxxxx">
+            </div>
+          </div>
+          <div class="mt-3 d-flex gap-2 align-items-center">
+            <button class="btn-primary-sm" onclick="saveEmailjsConfig()"><i class="fas fa-save"></i> Save Config</button>
+            <button class="btn-sm-custom btn-blue" style="padding:10px 18px;font-size:14px" onclick="testEmailjs()"><i class="fas fa-paper-plane"></i> Send Test Email</button>
+            <span id="ejsTestStatus" style="font-size:13px;color:var(--text-muted)"></span>
+          </div>
+          <!-- Setup Guide (hidden by default) -->
+          <div id="emailjsHelp" style="display:none;margin-top:20px;background:var(--body-bg);border-radius:12px;padding:18px">
+            <h6 style="font-size:14px;font-weight:700;margin-bottom:12px"><i class="fas fa-book me-2" style="color:var(--primary)"></i>EmailJS Setup Guide (5 minutes, free)</h6>
+            <ol style="font-size:13px;color:var(--text-main);padding-left:18px;line-height:2">
+              <li>Go to <a href="https://www.emailjs.com" target="_blank" style="color:var(--primary);font-weight:600">emailjs.com</a> and create a free account</li>
+              <li>Click <b>Email Services</b> → Add New Service (choose Gmail, Outlook, etc.) → copy the <b>Service ID</b></li>
+              <li>Click <b>Email Templates</b> → Create New Template. Use these variables in your template body:<br>
+                <code style="background:#e0e0e0;padding:2px 6px;border-radius:4px;font-size:12px">{{to_email}}</code> &nbsp;
+                <code style="background:#e0e0e0;padding:2px 6px;border-radius:4px;font-size:12px">{{guardian_name}}</code> &nbsp;
+                <code style="background:#e0e0e0;padding:2px 6px;border-radius:4px;font-size:12px">{{child_name}}</code> &nbsp;
+                <code style="background:#e0e0e0;padding:2px 6px;border-radius:4px;font-size:12px">{{vaccine_name}}</code> &nbsp;
+                <code style="background:#e0e0e0;padding:2px 6px;border-radius:4px;font-size:12px">{{due_date}}</code> &nbsp;
+                <code style="background:#e0e0e0;padding:2px 6px;border-radius:4px;font-size:12px">{{clinic_name}}</code>
+              </li>
+              <li>Copy the <b>Template ID</b></li>
+              <li>Go to <b>Account</b> → copy your <b>Public Key</b></li>
+              <li>Paste all three above and click <b>Save Config</b></li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reminder Controls -->
+      <div class="card-custom mb-4">
+        <div class="card-header-custom">
+          <h5><i class="fas fa-bell me-2" style="color:var(--accent)"></i>Send Reminders</h5>
+          <div style="display:flex;gap:8px">
+            <button class="btn-primary-sm" onclick="sendAllDueReminders()"><i class="fas fa-paper-plane"></i> Send All Due</button>
+            <button class="btn-sm-custom btn-blue" style="padding:8px 14px;font-size:13px" onclick="renderReminderTable()"><i class="fas fa-sync"></i> Refresh</button>
+          </div>
+        </div>
+        <div class="card-body-custom">
+          <div class="alert-custom" style="background:var(--info-light);color:var(--info);border:1px solid #bcd7ff;margin-bottom:16px"><i class="fas fa-info-circle"></i> Reminders are sent to the parent's email on file. Children without an email on record are skipped.</div>
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+            <select class="form-select" id="reminderDaysFilter" style="width:200px;font-size:13px" onchange="renderReminderTable()">
+              <option value="3">Due in next 3 days</option>
+              <option value="7" selected>Due in next 7 days</option>
+              <option value="14">Due in next 14 days</option>
+              <option value="30">Due in next 30 days</option>
+              <option value="overdue">Overdue only</option>
+              <option value="all">All pending</option>
+            </select>
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input type="text" id="reminderSearch" placeholder="Search child..." oninput="renderReminderTable()" style="width:200px">
+            </div>
+          </div>
+          <table class="table-custom">
+            <thead><tr><th><input type="checkbox" id="selectAllReminders" onchange="toggleAllReminders(this)"> All</th><th>Child</th><th>Guardian</th><th>Parent Email</th><th>Vaccine</th><th>Due Date</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="reminderTable"></tbody>
+          </table>
+          <div style="margin-top:14px;display:flex;align-items:center;gap:12px">
+            <button class="btn-primary-sm" onclick="sendSelectedReminders()"><i class="fas fa-paper-plane"></i> Send Selected</button>
+            <span id="reminderSendStatus" style="font-size:13px;color:var(--text-muted)"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reminder Log -->
+      <div class="card-custom">
+        <div class="card-header-custom">
+          <h5><i class="fas fa-history me-2" style="color:var(--primary)"></i>Reminder Log</h5>
+          <button class="btn-sm-custom btn-red" onclick="clearReminderLog()"><i class="fas fa-trash"></i> Clear Log</button>
+        </div>
+        <div class="card-body-custom p-0">
+          <table class="table-custom">
+            <thead><tr><th>Sent At</th><th>Child</th><th>Vaccine</th><th>Sent To</th><th>Status</th></tr></thead>
+            <tbody id="reminderLogTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="page-section" id="sec-reports">
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-header-custom"><h5><i class="fas fa-chart-bar me-2" style="color:var(--primary)"></i>Vaccination Coverage by Vaccine</h5></div>
+            <div class="card-body-custom" id="reportVaccines"></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-header-custom"><h5><i class="fas fa-venus-mars me-2" style="color:var(--primary)"></i>Gender Distribution</h5></div>
+            <div class="card-body-custom" id="reportGender"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card-custom">
+        <div class="card-header-custom"><h5><i class="fas fa-table me-2" style="color:var(--primary)"></i>Full Vaccination Summary</h5></div>
+        <div class="card-body-custom p-0">
+          <table class="table-custom">
+            <thead><tr><th>Child Name</th><th>Age</th><th>Gender</th><th>Vaccines Done</th><th>Pending</th><th>Coverage</th></tr></thead>
+            <tbody id="reportTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHILD DETAIL MODAL -->
+<div class="modal-overlay" id="childModal">
+  <div class="modal-box" style="max-width:680px">
+    <button class="modal-close" onclick="closeModal('childModal')"><i class="fas fa-times"></i></button>
+    <h4 id="childModalTitle">Child Vaccination Record</h4>
+    <div id="childModalContent"></div>
+  </div>
+</div>
+
+<!-- EDIT CHILD MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button>
+    <h4>Edit Child Record</h4>
+    <input type="hidden" id="editId">
+    <div class="row g-3">
+      <div class="col-6"><label class="form-label">Full Name</label><input class="form-control" id="editName"></div>
+      <div class="col-6"><label class="form-label">Date of Birth</label><input type="date" class="form-control" id="editDob"></div>
+      <div class="col-6"><label class="form-label">Gender</label><select class="form-select" id="editGender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+      <div class="col-6"><label class="form-label">Guardian Name</label><input class="form-control" id="editGuardian"></div>
+      <div class="col-6"><label class="form-label">Phone</label><input class="form-control" id="editPhone"></div>
+      <div class="col-6"><label class="form-label">Parent Email</label><input type="email" class="form-control" id="editEmail" placeholder="parent@email.com"></div>
+      <div class="col-6"><label class="form-label">Address</label><input class="form-control" id="editAddress"></div>
+    </div>
+    <div class="mt-3">
+      <button class="btn-primary-sm" onclick="saveEdit()"><i class="fas fa-save"></i> Save Changes</button>
+      <button class="btn-sm-custom btn-red ms-2" style="padding:10px 18px;font-size:14px" onclick="closeModal('editModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD USER MODAL -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('addUserModal')"><i class="fas fa-times"></i></button>
+    <h4>Add System User</h4>
+    <div class="row g-3">
+      <div class="col-6"><label class="form-label">Username</label><input class="form-control" id="newUsername" placeholder="username"></div>
+      <div class="col-6"><label class="form-label">Full Name</label><input class="form-control" id="newFullname" placeholder="Full Name"></div>
+      <div class="col-6"><label class="form-label">Password</label><input type="password" class="form-control" id="newPassword"></div>
+      <div class="col-6"><label class="form-label">Role</label><select class="form-select" id="newRole"><option value="admin">Admin</option><option value="worker">Healthcare Worker</option></select></div>
+    </div>
+    <div class="mt-3"><button class="btn-primary-sm" onclick="addUser()"><i class="fas fa-plus"></i> Add User</button></div>
+  </div>
+</div>
+
+<!-- VACCINE UPDATE MODAL -->
+<div class="modal-overlay" id="vaccUpdateModal">
+  <div class="modal-box" style="max-width:480px">
+    <button class="modal-close" onclick="closeModal('vaccUpdateModal')"><i class="fas fa-times"></i></button>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <div style="width:42px;height:42px;background:var(--primary-light);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:18px"><i class="fas fa-syringe"></i></div>
+      <div>
+        <h4 style="margin:0;font-size:18px" id="vaccUpdateTitle">Record Vaccine</h4>
+        <p style="margin:0;font-size:12px;color:var(--text-muted)" id="vaccUpdateChildName"></p>
+      </div>
+    </div>
+    <input type="hidden" id="vaccUpdateChildId">
+    <input type="hidden" id="vaccUpdateVaccineId">
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label">Date Given <span style="color:var(--danger)">*</span></label>
+        <input type="date" class="form-control" id="vaccUpdateDate">
+      </div>
+      <div class="col-6">
+        <label class="form-label">Batch / Lot Number</label>
+        <input type="text" class="form-control" id="vaccUpdateBatch" placeholder="e.g. BCG-2024-001">
+      </div>
+      <div class="col-6">
+        <label class="form-label">Administered By</label>
+        <input type="text" class="form-control" id="vaccUpdateBy" placeholder="Name of healthcare worker">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Notes / Remarks</label>
+        <textarea class="form-control" id="vaccUpdateNotes" rows="2" placeholder="Any reactions, observations, or next steps..." style="resize:vertical"></textarea>
+      </div>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:10px">
+      <button class="btn-primary-sm" onclick="saveVaccineUpdate()"><i class="fas fa-save"></i> Save Record</button>
+      <button class="btn-sm-custom btn-red" style="padding:10px 18px;font-size:14px" onclick="closeModal('vaccUpdateModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD VACCINE MODAL -->
+<div class="modal-overlay" id="addVaccineModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('addVaccineModal')"><i class="fas fa-times"></i></button>
+    <h4>Add Vaccine</h4>
+    <div class="row g-3">
+      <div class="col-6"><label class="form-label">Vaccine Name</label><input class="form-control" id="newVaccineName" placeholder="e.g. Rotavirus"></div>
+      <div class="col-6"><label class="form-label">Age Given (weeks)</label><input type="number" class="form-control" id="newVaccineAge" placeholder="e.g. 6"></div>
+      <div class="col-6"><label class="form-label">Doses</label><input type="number" class="form-control" id="newVaccineDoses" value="1" min="1"></div>
+      <div class="col-12"><label class="form-label">Description</label><input class="form-control" id="newVaccineDesc" placeholder="Brief description"></div>
+    </div>
+    <div class="mt-3"><button class="btn-primary-sm" onclick="addVaccine()"><i class="fas fa-plus"></i> Add Vaccine</button></div>
+  </div>
+</div>
+
+<script>
+// ==================== DATA STORE ====================
+let DB = {
+  users: [
+    { id:1, username:'admin', password:'admin123', fullname:'Dr. Jagadish Sahu', role:'admin', active:true },
+    { id:2, username:'worker', password:'worker123', fullname:'Nurse James Otieno', role:'worker', active:true }
+  ],
+  vaccines: [
+    { id:1, name:'BCG', ageWeeks:0, doses:1, desc:'Bacille Calmette-Guérin – protects against tuberculosis' },
+    { id:2, name:'Hepatitis B (Birth)', ageWeeks:0, doses:1, desc:'First dose given at birth' },
+    { id:3, name:'Polio OPV', ageWeeks:6, doses:3, desc:'Oral Polio Vaccine – given at 6, 10, 14 weeks' },
+    { id:4, name:'DPT (Pentavalent)', ageWeeks:6, doses:3, desc:'Diphtheria, Pertussis, Tetanus + Hib + Hep B' },
+    { id:5, name:'Pneumococcal (PCV)', ageWeeks:6, doses:3, desc:'Protects against pneumococcal disease' },
+    { id:6, name:'Rotavirus', ageWeeks:6, doses:2, desc:'Prevents rotavirus diarrhea' },
+    { id:7, name:'Measles (MR)', ageWeeks:36, doses:2, desc:'Measles-Rubella vaccine at 9 months & 18 months' },
+    { id:8, name:'Yellow Fever', ageWeeks:36, doses:1, desc:'Given at 9 months in endemic areas' },
+    { id:9, name:'Vitamin A', ageWeeks:24, doses:1, desc:'Vitamin A supplementation at 6 months' },
+  ],
+  children: [],
+  vaccinationRecords: [],
+  nextChildId: 1001,
+  nextUserId: 3,
+};
+
+function saveDB() { try { localStorage.setItem('vaccitrack_db', JSON.stringify(DB)); } catch(e){} }
+function loadDB() {
+  try {
+    const d = localStorage.getItem('vaccitrack_db');
+    if(d) DB = JSON.parse(d);
+  } catch(e) {}
+}
+
+let currentUser = null;
+
+// ==================== AUTH ====================
+function doLogin() {
+  const u = document.getElementById('loginUsername').value.trim();
+  const p = document.getElementById('loginPassword').value;
+  const user = DB.users.find(x => x.username === u && x.password === p && x.active);
+  if(!user) { showAuthError('Invalid username or password. Try the demo credentials below.'); return; }
+  currentUser = user;
+  document.getElementById('authPage').style.display = 'none';
+  document.getElementById('appPage').style.display = 'block';
+  document.getElementById('sidebarName').textContent = user.fullname;
+  document.getElementById('sidebarRole').textContent = user.role === 'admin' ? 'Administrator' : 'Healthcare Worker';
+  document.getElementById('sidebarAvatar').textContent = user.fullname.charAt(0).toUpperCase();
+  // Show/hide admin links
+  const isAdmin = user.role === 'admin';
+  ['adminNavLabel','adminUsersLink','adminVaccinesLink','adminReportsLink'].forEach(id => {
+    document.getElementById(id).style.display = isAdmin ? '' : 'none';
+  });
+  refreshDashboard();
+}
+function doLogout() {
+  currentUser = null;
+  document.getElementById('appPage').style.display = 'none';
+  document.getElementById('authPage').style.display = 'flex';
+  document.getElementById('loginPassword').value = '';
+}
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  document.getElementById('authErrorMsg').textContent = msg;
+  el.style.display = 'flex';
+  setTimeout(()=>el.style.display='none', 4000);
+}
+document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+// ==================== NAVIGATION ====================
+function showPage(page, link) {
+  document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('sec-'+page).classList.add('active');
+  if(link) link.classList.add('active');
+  const titles = {
+    dashboard:['Dashboard','Overview of vaccination activities'],
+    register:['Register Child','Add a new child to the system'],
+    records:['Vaccination Records','Track and update vaccination status'],
+    schedule:['Vaccination Schedule','Standard immunization schedule'],
+    search:['Search & Records','Find and manage child records'],
+    reminders:['Email Reminders','Send automated vaccine reminders to parents'],
+    adminUsers:['Manage Users','System user accounts'],
+    adminVaccines:['Manage Vaccines','Vaccine list management'],
+    reports:['Reports','Vaccination statistics and coverage']
+  };
+  const t = titles[page]||[page,''];
+  document.getElementById('pageTitle').textContent = t[0];
+  document.getElementById('pageSubtitle').textContent = t[1];
+  if(page==='dashboard') refreshDashboard();
+  if(page==='records') renderRecords();
+  if(page==='schedule') renderSchedule();
+  if(page==='adminUsers') renderUsers();
+  if(page==='adminVaccines') renderAdminVaccines();
+  if(page==='reports') renderReports();
+  if(page==='reminders') {
+    loadEmailjsConfigFields();
+    updateEmailjsStatusBadge();
+    renderReminderTable();
+    renderReminderLog();
+  }
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// ==================== HELPERS ====================
+function calcAge(dob) {
+  const d = new Date(dob), now = new Date();
+  let months = (now.getFullYear()-d.getFullYear())*12 + (now.getMonth()-d.getMonth());
+  if(now.getDate()<d.getDate()) months--;
+  if(months<0) months=0;
+  if(months<1) { const days=Math.floor((now-d)/86400000); return days+'d'; }
+  if(months<24) return months+'mo';
+  return Math.floor(months/12)+'yr';
+}
+function calcAgeWeeks(dob) {
+  const d = new Date(dob), now = new Date();
+  return Math.floor((now-d)/(86400000*7));
+}
+function getChildRecords(childId) {
+  return DB.vaccinationRecords.filter(r=>r.childId===childId);
+}
+function getCompletedCount(childId) {
+  return getChildRecords(childId).filter(r=>r.status==='completed').length;
+}
+function getTotalVaccines() { return DB.vaccines.length; }
+function getProgressPct(childId) {
+  const done = getCompletedCount(childId);
+  return Math.round((done/getTotalVaccines())*100);
+}
+function getProgressBadge(childId) {
+  const pct = getProgressPct(childId);
+  if(pct===100) return '<span class="badge-custom badge-success"><i class="fas fa-check-circle"></i> Complete</span>';
+  if(pct>0) return `<span class="badge-custom badge-warning"><i class="fas fa-spinner"></i> ${pct}% Done</span>`;
+  return '<span class="badge-custom badge-secondary"><i class="fas fa-clock"></i> Not Started</span>';
+}
+function formatDate(d) { if(!d) return '—'; return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+
+// ==================== DASHBOARD ====================
+function refreshDashboard() {
+  const children = DB.children;
+  let completed=0, pending=0, upcomingCount=0;
+  children.forEach(c => {
+    completed += getCompletedCount(c.id);
+    pending += DB.vaccines.length - getCompletedCount(c.id);
+  });
+  // due this week
+  const now = new Date();
+  children.forEach(c => {
+    DB.vaccines.forEach(v => {
+      const rec = DB.vaccinationRecords.find(r=>r.childId===c.id&&r.vaccineId===v.id);
+      if(!rec || rec.status!=='completed') {
+        const dueDate = new Date(new Date(c.dob).getTime() + v.ageWeeks*7*86400000);
+        const diff = (dueDate-now)/86400000;
+        if(diff>=0&&diff<=7) upcomingCount++;
+      }
+    });
+  });
+  document.getElementById('statChildren').textContent = children.length;
+  document.getElementById('statCompleted').textContent = completed;
+  document.getElementById('statPending').textContent = pending;
+  document.getElementById('statUpcoming').textContent = upcomingCount;
+
+  // Recent table
+  const tbody = document.getElementById('dashRecentTable');
+  const recent = [...children].sort((a,b)=>b.id-a.id).slice(0,5);
+  if(recent.length===0){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted)">No children registered yet</td></tr>';return;}
+  tbody.innerHTML = recent.map(c=>`
+    <tr>
+      <td><b>${c.name}</b></td>
+      <td>${calcAge(c.dob)}</td>
+      <td>${c.guardian}</td>
+      <td>${getProgressBadge(c.id)}</td>
+    </tr>`).join('');
+
+  // Upcoming list
+  const upList = document.getElementById('upcomingList');
+  let upcoming = [];
+  children.forEach(c => {
+    DB.vaccines.forEach(v => {
+      const rec = DB.vaccinationRecords.find(r=>r.childId===c.id&&r.vaccineId===v.id);
+      if(!rec||rec.status!=='completed') {
+        const dueDate = new Date(new Date(c.dob).getTime()+v.ageWeeks*7*86400000);
+        const diff = (dueDate-now)/86400000;
+        if(diff<=30) upcoming.push({child:c,vaccine:v,dueDate,diff});
+      }
+    });
+  });
+  upcoming.sort((a,b)=>a.diff-b.diff);
+  if(upcoming.length===0){upList.innerHTML='<div style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px">No upcoming vaccinations in the next 30 days</div>';return;}
+  upList.innerHTML = upcoming.slice(0,8).map(u=>{
+    const isOverdue = u.diff<0;
+    const isSoon = u.diff<=3;
+    const color = isOverdue?'#e05050':isSoon?'#f4a022':'#12a08a';
+    const label = isOverdue?`Overdue ${Math.abs(Math.round(u.diff))}d`:u.diff<1?'Today':Math.round(u.diff)+'d left';
+    return `<div class="upcoming-item">
+      <div class="upcoming-dot" style="background:${color}"></div>
+      <div>
+        <div class="upcoming-child">${u.child.name}</div>
+        <div class="upcoming-vaccine">${u.vaccine.name}</div>
+      </div>
+      <div class="upcoming-date" style="background:${color}20;color:${color}">${label}</div>
+    </div>`;
+  }).join('');
+
+  // Alerts
+  const alertsDiv = document.getElementById('dashboardAlerts');
+  const overdue = upcoming.filter(u=>u.diff<0);
+  const dueSoon = upcoming.filter(u=>u.diff>=0&&u.diff<=3);
+  let alerts = '';
+  if(overdue.length>0) alerts+=`<div class="alert-custom alert-error"><i class="fas fa-exclamation-triangle"></i> <b>${overdue.length} vaccine(s) are overdue!</b> Please check upcoming vaccinations.</div>`;
+  if(dueSoon.length>0) alerts+=`<div class="alert-custom alert-warning"><i class="fas fa-bell"></i> <b>${dueSoon.length} vaccine(s)</b> are due within 3 days.</div>`;
+  alertsDiv.innerHTML = alerts;
+}
+
+// ==================== REGISTER CHILD ====================
+function registerChild() {
+  const name = document.getElementById('regName').value.trim();
+  const dob = document.getElementById('regDob').value;
+  const gender = document.getElementById('regGender').value;
+  const guardian = document.getElementById('regGuardian').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const address = document.getElementById('regAddress').value.trim();
+  if(!name||!dob||!gender||!guardian||!phone||!email) {
+    showAlert('registerAlert','error','Please fill in all required fields including parent email.'); return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showAlert('registerAlert','error','Please enter a valid email address.'); return;
+  }
+  const child = { id: DB.nextChildId++, name, dob, gender, guardian, phone, email, address, registeredBy: currentUser.username, registeredAt: new Date().toISOString() };
+  DB.children.push(child);
+  saveDB();
+  showAlert('registerAlert','success',`✓ ${name} registered successfully! ID: #${child.id}. Reminders will be sent to ${email}`);
+  clearRegForm();
+}
+function clearRegForm() {
+  ['regName','regDob','regGuardian','regPhone','regEmail','regAddress'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('regGender').value='';
+}
+function showAlert(containerId, type, msg) {
+  const el = document.getElementById(containerId);
+  const cls = type==='success'?'alert-success':'alert-error';
+  const icon = type==='success'?'fa-check-circle':'fa-exclamation-circle';
+  el.innerHTML = `<div class="alert-custom ${cls}"><i class="fas ${icon}"></i> ${msg}</div>`;
+  el.style.display='block';
+  setTimeout(()=>{el.style.display='none';},4000);
+}
+
+// ==================== VACCINATION RECORDS ====================
+function renderRecords() {
+  const q = document.getElementById('recordsSearch').value.toLowerCase();
+  const filter = document.getElementById('recordsFilter').value;
+  let children = DB.children.filter(c=>c.name.toLowerCase().includes(q)||String(c.id).includes(q));
+  if(filter==='complete') children=children.filter(c=>getProgressPct(c.id)===100);
+  else if(filter==='partial') children=children.filter(c=>{const p=getProgressPct(c.id);return p>0&&p<100;});
+  else if(filter==='none') children=children.filter(c=>getProgressPct(c.id)===0);
+  const tbody = document.getElementById('recordsTable');
+  if(children.length===0){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">No records found</td></tr>';return;}
+  tbody.innerHTML = children.map(c=>{
+    const pct=getProgressPct(c.id);
+    return `<tr>
+      <td><span style="font-size:11px;color:var(--text-muted)">#${c.id}</span></td>
+      <td><b>${c.name}</b></td>
+      <td>${calcAge(c.dob)}</td>
+      <td>${c.guardian}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="progress-bar-custom"><div class="progress-fill" style="width:${pct}%"></div></div>
+          <span style="font-size:12px;font-weight:600;color:var(--text-muted)">${pct}%</span>
+        </div>
+      </td>
+      <td>
+        <button class="btn-sm-custom btn-green" onclick="viewChildDetail(${c.id})"><i class="fas fa-eye"></i> View</button>
+        <button class="btn-sm-custom btn-orange ms-1" onclick="openEditModal(${c.id})"><i class="fas fa-edit"></i></button>
+        <button class="btn-sm-custom btn-red ms-1" onclick="deleteChild(${c.id})"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ==================== CHILD DETAIL ====================
+function viewChildDetail(childId) {
+  const c = DB.children.find(x=>x.id===childId);
+  if(!c) return;
+  document.getElementById('childModalTitle').textContent = `${c.name} — Vaccination Record`;
+  const ageWeeks = calcAgeWeeks(c.dob);
+  let vaccRows = DB.vaccines.map(v=>{
+    const rec = DB.vaccinationRecords.find(r=>r.childId===childId&&r.vaccineId===v.id);
+    const status = rec?rec.status:'pending';
+    const dueDate = new Date(new Date(c.dob).getTime()+v.ageWeeks*7*86400000);
+    const isDue = ageWeeks >= v.ageWeeks;
+    const statusBadge = status==='completed'
+      ? `<span class="badge-custom badge-success"><i class="fas fa-check-circle"></i> Given on ${rec&&rec.date?formatDate(rec.date):'—'}</span>`
+      : isDue
+        ? `<span class="badge-custom badge-danger"><i class="fas fa-exclamation-circle"></i> Overdue (due ${formatDate(dueDate)})</span>`
+        : `<span class="badge-custom badge-warning"><i class="fas fa-clock"></i> Pending — due ${formatDate(dueDate)}</span>`;
+    const extraInfo = status==='completed' && rec ? `
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px">
+        ${rec.batchNo?`<span style="font-size:11px;color:var(--text-muted)"><i class="fas fa-barcode"></i> Batch: <b>${rec.batchNo}</b></span>`:''}
+        ${rec.administeredBy?`<span style="font-size:11px;color:var(--text-muted)"><i class="fas fa-user-md"></i> By: <b>${rec.administeredBy}</b></span>`:''}
+        ${rec.notes?`<span style="font-size:11px;color:var(--text-muted)"><i class="fas fa-sticky-note"></i> ${rec.notes}</span>`:''}
+      </div>` : '';
+    const actionBtns = status==='completed'
+      ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
+           <button class="btn-sm-custom btn-blue" onclick="openVaccineUpdateModal(${childId},${v.id})"><i class="fas fa-edit"></i> Edit</button>
+           <button class="btn-sm-custom btn-red" onclick="undoVaccine(${childId},${v.id})"><i class="fas fa-undo"></i> Undo</button>
+         </div>`
+      : `<button class="btn-sm-custom btn-green" onclick="openVaccineUpdateModal(${childId},${v.id})"><i class="fas fa-syringe"></i> Record</button>`;
+    return `<div class="vacc-item">
+      <div style="flex:1">
+        <div class="vacc-name">${v.name} <span style="font-size:11px;font-weight:400;color:var(--text-muted)">(${v.doses} dose${v.doses>1?'s':''})</span></div>
+        <div class="vacc-due" style="margin-top:3px">${statusBadge}</div>
+        ${extraInfo}
+      </div>
+      <div style="flex-shrink:0;margin-left:12px">${actionBtns}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('childModalContent').innerHTML = `
+    <div class="row g-2 mb-3" style="background:var(--body-bg);border-radius:12px;padding:14px;font-size:13px">
+      <div class="col-4"><div class="detail-label">Date of Birth</div><div class="detail-value">${formatDate(c.dob)}</div></div>
+      <div class="col-4"><div class="detail-label">Age</div><div class="detail-value">${calcAge(c.dob)}</div></div>
+      <div class="col-4"><div class="detail-label">Gender</div><div class="detail-value">${c.gender}</div></div>
+      <div class="col-4"><div class="detail-label">Guardian</div><div class="detail-value">${c.guardian}</div></div>
+      <div class="col-4"><div class="detail-label">Phone</div><div class="detail-value">${c.phone}</div></div>
+      <div class="col-4"><div class="detail-label">Address</div><div class="detail-value">${c.address||'—'}</div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <h5 style="font-size:15px;margin:0">Vaccines <span style="font-size:13px;color:var(--text-muted);font-family:'DM Sans',sans-serif">(${getCompletedCount(childId)}/${DB.vaccines.length} completed)</span></h5>
+      <div style="height:8px;background:var(--border);border-radius:4px;width:120px;overflow:hidden"><div style="height:100%;width:${getProgressPct(childId)}%;background:var(--primary-mid);border-radius:4px"></div></div>
+    </div>
+    ${vaccRows}`;
+  document.getElementById('childModal').classList.add('show');
+}
+
+// Open the vaccine update/record modal
+function openVaccineUpdateModal(childId, vaccineId) {
+  const c = DB.children.find(x=>x.id===childId);
+  const v = DB.vaccines.find(x=>x.id===vaccineId);
+  const rec = DB.vaccinationRecords.find(r=>r.childId===childId&&r.vaccineId===vaccineId);
+  document.getElementById('vaccUpdateChildId').value = childId;
+  document.getElementById('vaccUpdateVaccineId').value = vaccineId;
+  document.getElementById('vaccUpdateTitle').textContent = `Record: ${v.name}`;
+  document.getElementById('vaccUpdateChildName').textContent = `For: ${c.name} (ID #${c.id})`;
+  document.getElementById('vaccUpdateDate').value = rec&&rec.date ? rec.date : new Date().toISOString().split('T')[0];
+  document.getElementById('vaccUpdateBatch').value = rec&&rec.batchNo ? rec.batchNo : '';
+  document.getElementById('vaccUpdateBy').value = rec&&rec.administeredBy ? rec.administeredBy : currentUser.fullname;
+  document.getElementById('vaccUpdateNotes').value = rec&&rec.notes ? rec.notes : '';
+  document.getElementById('vaccUpdateModal').classList.add('show');
+}
+
+function saveVaccineUpdate() {
+  const childId = parseInt(document.getElementById('vaccUpdateChildId').value);
+  const vaccineId = parseInt(document.getElementById('vaccUpdateVaccineId').value);
+  const date = document.getElementById('vaccUpdateDate').value;
+  const batchNo = document.getElementById('vaccUpdateBatch').value.trim();
+  const administeredBy = document.getElementById('vaccUpdateBy').value.trim();
+  const notes = document.getElementById('vaccUpdateNotes').value.trim();
+  if(!date) { alert('Please enter the date the vaccine was given.'); return; }
+  const idx = DB.vaccinationRecords.findIndex(r=>r.childId===childId&&r.vaccineId===vaccineId);
+  const record = { childId, vaccineId, status:'completed', date, batchNo, administeredBy, notes, updatedBy: currentUser.username, updatedAt: new Date().toISOString() };
+  if(idx>=0) DB.vaccinationRecords[idx] = record;
+  else DB.vaccinationRecords.push(record);
+  saveDB();
+  closeModal('vaccUpdateModal');
+  viewChildDetail(childId);
+  renderRecords();
+}
+
+function undoVaccine(childId, vaccineId) {
+  if(!confirm('Remove the completed status for this vaccine?')) return;
+  DB.vaccinationRecords = DB.vaccinationRecords.filter(r=>!(r.childId===childId&&r.vaccineId===vaccineId));
+  saveDB();
+  viewChildDetail(childId);
+  renderRecords();
+}
+
+// ==================== EDIT CHILD ====================
+function openEditModal(childId) {
+  const c = DB.children.find(x=>x.id===childId);
+  if(!c) return;
+  document.getElementById('editId').value=childId;
+  document.getElementById('editName').value=c.name;
+  document.getElementById('editDob').value=c.dob;
+  document.getElementById('editGender').value=c.gender;
+  document.getElementById('editGuardian').value=c.guardian;
+  document.getElementById('editPhone').value=c.phone;
+  document.getElementById('editEmail').value=c.email||'';
+  document.getElementById('editAddress').value=c.address||'';
+  document.getElementById('editModal').classList.add('show');
+}
+function saveEdit() {
+  const id = parseInt(document.getElementById('editId').value);
+  const idx = DB.children.findIndex(c=>c.id===id);
+  if(idx<0) return;
+  DB.children[idx].name=document.getElementById('editName').value.trim();
+  DB.children[idx].dob=document.getElementById('editDob').value;
+  DB.children[idx].gender=document.getElementById('editGender').value;
+  DB.children[idx].guardian=document.getElementById('editGuardian').value.trim();
+  DB.children[idx].phone=document.getElementById('editPhone').value.trim();
+  DB.children[idx].email=document.getElementById('editEmail').value.trim();
+  DB.children[idx].address=document.getElementById('editAddress').value.trim();
+  saveDB(); closeModal('editModal'); renderRecords(); doSearch();
+}
+function deleteChild(childId) {
+  if(!confirm('Are you sure you want to delete this child record? This cannot be undone.')) return;
+  DB.children = DB.children.filter(c=>c.id!==childId);
+  DB.vaccinationRecords = DB.vaccinationRecords.filter(r=>r.childId!==childId);
+  saveDB(); renderRecords(); refreshDashboard();
+}
+
+// ==================== SCHEDULE ====================
+function renderSchedule() {
+  const tbody = document.getElementById('scheduleTable');
+  tbody.innerHTML = DB.vaccines.map(v=>`<tr>
+    <td><b>${v.name}</b></td>
+    <td><span class="schedule-age-badge">${v.ageWeeks<1?'At Birth':v.ageWeeks<4?v.ageWeeks+' weeks':Math.round(v.ageWeeks/4)+' months'}</span></td>
+    <td style="color:var(--text-muted);font-size:13px">${v.desc}</td>
+    <td><span class="badge-custom badge-info">${v.doses} dose${v.doses>1?'s':''}</span></td>
+  </tr>`).join('');
+}
+
+// ==================== SEARCH ====================
+function doSearch() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const gender = document.getElementById('searchGender').value;
+  if(!q && !gender) { document.getElementById('searchTable').innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">Enter a search term above</td></tr>'; return; }
+  let results = DB.children.filter(c=>(c.name.toLowerCase().includes(q)||String(c.id).includes(q)));
+  if(gender) results=results.filter(c=>c.gender===gender);
+  const tbody = document.getElementById('searchTable');
+  if(results.length===0){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted)">No matching records found</td></tr>';return;}
+  tbody.innerHTML=results.map(c=>`<tr>
+    <td><span style="font-size:11px;color:var(--text-muted)">#${c.id}</span></td>
+    <td><b>${c.name}</b></td>
+    <td>${formatDate(c.dob)}</td>
+    <td>${c.gender}</td>
+    <td>${c.guardian}</td>
+    <td>${c.phone}</td>
+    <td>
+      <button class="btn-sm-custom btn-green" onclick="viewChildDetail(${c.id})"><i class="fas fa-eye"></i></button>
+      <button class="btn-sm-custom btn-orange ms-1" onclick="openEditModal(${c.id})"><i class="fas fa-edit"></i></button>
+      <button class="btn-sm-custom btn-red ms-1" onclick="deleteChild(${c.id});doSearch()"><i class="fas fa-trash"></i></button>
+    </td>
+  </tr>`).join('');
+}
+
+// ==================== ADMIN USERS ====================
+function renderUsers() {
+  const tbody = document.getElementById('usersTable');
+  tbody.innerHTML = DB.users.map(u=>`<tr>
+    <td><b>${u.username}</b></td>
+    <td>${u.fullname}</td>
+    <td><span class="badge-custom ${u.role==='admin'?'badge-info':'badge-success'}">${u.role==='admin'?'Admin':'Healthcare Worker'}</span></td>
+    <td><span class="badge-custom ${u.active?'badge-success':'badge-danger'}">${u.active?'Active':'Inactive'}</span></td>
+    <td>
+      <button class="btn-sm-custom ${u.active?'btn-red':'btn-green'}" onclick="toggleUser(${u.id})"><i class="fas fa-${u.active?'ban':'check'}"></i> ${u.active?'Disable':'Enable'}</button>
+      ${u.username!=='admin'?`<button class="btn-sm-custom btn-red ms-1" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>`:''}
+    </td>
+  </tr>`).join('');
+}
+function openAddUserModal() { document.getElementById('addUserModal').classList.add('show'); }
+function addUser() {
+  const username=document.getElementById('newUsername').value.trim();
+  const fullname=document.getElementById('newFullname').value.trim();
+  const password=document.getElementById('newPassword').value;
+  const role=document.getElementById('newRole').value;
+  if(!username||!fullname||!password){alert('Fill all fields');return;}
+  if(DB.users.find(u=>u.username===username)){alert('Username already exists');return;}
+  DB.users.push({id:DB.nextUserId++,username,password,fullname,role,active:true});
+  saveDB(); closeModal('addUserModal'); renderUsers();
+  document.getElementById('newUsername').value=document.getElementById('newFullname').value=document.getElementById('newPassword').value='';
+}
+function toggleUser(id) { const u=DB.users.find(x=>x.id===id); if(u){u.active=!u.active;saveDB();renderUsers();} }
+function deleteUser(id) { if(!confirm('Delete this user?'))return; DB.users=DB.users.filter(u=>u.id!==id); saveDB();renderUsers(); }
+
+// ==================== ADMIN VACCINES ====================
+function renderAdminVaccines() {
+  const tbody = document.getElementById('vaccinesTable');
+  tbody.innerHTML = DB.vaccines.map(v=>`<tr>
+    <td><b>${v.name}</b></td>
+    <td><span class="schedule-age-badge">${v.ageWeeks<1?'Birth':v.ageWeeks+'wks'}</span></td>
+    <td>${v.doses}</td>
+    <td style="font-size:13px;color:var(--text-muted)">${v.desc}</td>
+    <td><button class="btn-sm-custom btn-red" onclick="deleteVaccine(${v.id})"><i class="fas fa-trash"></i></button></td>
+  </tr>`).join('');
+}
+function openAddVaccineModal() { document.getElementById('addVaccineModal').classList.add('show'); }
+function addVaccine() {
+  const name=document.getElementById('newVaccineName').value.trim();
+  const ageWeeks=parseInt(document.getElementById('newVaccineAge').value)||0;
+  const doses=parseInt(document.getElementById('newVaccineDoses').value)||1;
+  const desc=document.getElementById('newVaccineDesc').value.trim();
+  if(!name){alert('Enter vaccine name');return;}
+  const newId=Math.max(...DB.vaccines.map(v=>v.id),0)+1;
+  DB.vaccines.push({id:newId,name,ageWeeks,doses,desc});
+  saveDB();closeModal('addVaccineModal');renderAdminVaccines();
+  document.getElementById('newVaccineName').value=document.getElementById('newVaccineDesc').value='';
+}
+function deleteVaccine(id) {
+  if(!confirm('Delete this vaccine? Existing records will remain.'))return;
+  DB.vaccines=DB.vaccines.filter(v=>v.id!==id);saveDB();renderAdminVaccines();
+}
+
+// ==================== REPORTS ====================
+function renderReports() {
+  // Vaccine coverage
+  const rDiv = document.getElementById('reportVaccines');
+  const total = DB.children.length;
+  rDiv.innerHTML = total===0?'<p style="color:var(--text-muted);font-size:13px">No data yet</p>':DB.vaccines.map(v=>{
+    const done=DB.vaccinationRecords.filter(r=>r.vaccineId===v.id&&r.status==='completed').length;
+    const pct=total>0?Math.round((done/total)*100):0;
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+        <span style="font-weight:600">${v.name}</span><span style="color:var(--text-muted)">${done}/${total} (${pct}%)</span>
+      </div>
+      <div style="height:20px;background:var(--border);border-radius:6px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:var(--primary-mid);border-radius:6px;transition:width .5s"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Gender
+  const male=DB.children.filter(c=>c.gender==='Male').length;
+  const female=DB.children.filter(c=>c.gender==='Female').length;
+  const other=DB.children.filter(c=>c.gender==='Other').length;
+  const gDiv=document.getElementById('reportGender');
+  gDiv.innerHTML=total===0?'<p style="color:var(--text-muted);font-size:13px">No data yet</p>':`
+    ${[['Male',male,'#3b82f6'],['Female','#e05050',female,'#e05050'],['Other',other,'#f4a022']].map((g,i)=>{
+      const [label,count,color]=[g[0],g[1],g[2]];
+      const pct=total>0?Math.round((count/total)*100):0;
+      return `<div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+          <span style="font-weight:600">${label}</span><span style="color:var(--text-muted)">${count} (${pct}%)</span>
+        </div>
+        <div style="height:20px;background:var(--border);border-radius:6px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${color};border-radius:6px"></div>
+        </div>
+      </div>`;
+    }).join('')}`;
+
+  // Summary table
+  const tbody=document.getElementById('reportTable');
+  if(DB.children.length===0){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">No data</td></tr>';return;}
+  tbody.innerHTML=DB.children.map(c=>{
+    const done=getCompletedCount(c.id);
+    const pending=DB.vaccines.length-done;
+    const pct=getProgressPct(c.id);
+    return `<tr>
+      <td><b>${c.name}</b></td>
+      <td>${calcAge(c.dob)}</td>
+      <td>${c.gender}</td>
+      <td><span class="badge-custom badge-success">${done}</span></td>
+      <td><span class="badge-custom badge-warning">${pending}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="progress-bar-custom"><div class="progress-fill" style="width:${pct}%"></div></div>
+          <b style="font-size:12px">${pct}%</b>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ==================== MODAL ====================
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');});
+});
+
+// ==================== EMAILJS & REMINDERS ====================
+let ejsConfig = { publicKey:'', serviceId:'', templateId:'' };
+
+function loadEmailjsConfig() {
+  try { const s=localStorage.getItem('vaccitrack_ejs'); if(s){ejsConfig=JSON.parse(s);} } catch(e){}
+}
+function saveEmailjsConfig() {
+  ejsConfig.publicKey = document.getElementById('ejsPublicKey').value.trim();
+  ejsConfig.serviceId = document.getElementById('ejsServiceId').value.trim();
+  ejsConfig.templateId = document.getElementById('ejsTemplateId').value.trim();
+  if(!ejsConfig.publicKey||!ejsConfig.serviceId||!ejsConfig.templateId) {
+    alert('Please fill in all three EmailJS fields.'); return;
+  }
+  localStorage.setItem('vaccitrack_ejs', JSON.stringify(ejsConfig));
+  emailjs.init(ejsConfig.publicKey);
+  updateEmailjsStatusBadge();
+  alert('✓ EmailJS configuration saved!');
+}
+function updateEmailjsStatusBadge() {
+  const badge = document.getElementById('emailjsStatusBadge');
+  if(!badge) return;
+  if(ejsConfig.publicKey && ejsConfig.serviceId && ejsConfig.templateId) {
+    badge.className='badge-custom badge-success'; badge.textContent='Configured ✓';
+  } else {
+    badge.className='badge-custom badge-secondary'; badge.textContent='Not Configured';
+  }
+}
+function showEmailjsHelp() {
+  const el=document.getElementById('emailjsHelp');
+  el.style.display = el.style.display==='none'?'block':'none';
+}
+function testEmailjs() {
+  if(!ejsConfig.publicKey) { document.getElementById('ejsTestStatus').textContent='⚠ Save config first.'; return; }
+  const testEmail = prompt('Enter your email address to receive a test reminder:');
+  if(!testEmail) return;
+  document.getElementById('ejsTestStatus').textContent = '⏳ Sending...';
+  emailjs.send(ejsConfig.serviceId, ejsConfig.templateId, {
+    to_email: testEmail,
+    guardian_name: 'Test Guardian',
+    child_name: 'Test Child',
+    vaccine_name: 'BCG (Test)',
+    due_date: new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),
+    clinic_name: 'VacciTrack Clinic'
+  }).then(()=>{
+    document.getElementById('ejsTestStatus').textContent='✓ Test email sent! Check your inbox.';
+  }).catch(err=>{
+    document.getElementById('ejsTestStatus').textContent='✗ Failed: '+err.text;
+  });
+}
+
+// Build the reminder table
+function getDueItems(daysFilter) {
+  const now = new Date(); const items = [];
+  DB.children.forEach(c => {
+    DB.vaccines.forEach(v => {
+      const rec = DB.vaccinationRecords.find(r=>r.childId===c.id&&r.vaccineId===v.id);
+      if(rec&&rec.status==='completed') return;
+      const dueDate = new Date(new Date(c.dob).getTime()+v.ageWeeks*7*86400000);
+      const diff = (dueDate-now)/86400000;
+      let include = false;
+      if(daysFilter==='overdue') include = diff<0;
+      else if(daysFilter==='all') include = true;
+      else include = diff>=0 && diff<=parseInt(daysFilter);
+      if(include) items.push({child:c, vaccine:v, dueDate, diff});
+    });
+  });
+  return items.sort((a,b)=>a.diff-b.diff);
+}
+
+function renderReminderTable() {
+  const daysFilter = document.getElementById('reminderDaysFilter').value;
+  const q = document.getElementById('reminderSearch').value.toLowerCase();
+  let items = getDueItems(daysFilter).filter(i=>i.child.name.toLowerCase().includes(q));
+  const tbody = document.getElementById('reminderTable');
+  if(items.length===0) { tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-muted)">No pending vaccinations match this filter</td></tr>'; return; }
+  tbody.innerHTML = items.map((item,i)=>{
+    const isOverdue = item.diff<0;
+    const hasEmail = !!item.child.email;
+    const alreadySent = (DB.reminderLog||[]).some(l=>l.childId===item.child.id&&l.vaccineId===item.vaccine.id&&((new Date()-new Date(l.sentAt))/3600000)<24);
+    const statusBadge = alreadySent
+      ? `<span class="badge-custom badge-success"><i class="fas fa-check"></i> Sent today</span>`
+      : isOverdue
+        ? `<span class="badge-custom badge-danger">Overdue ${Math.abs(Math.round(item.diff))}d</span>`
+        : `<span class="badge-custom badge-warning">Due in ${Math.round(item.diff)}d</span>`;
+    return `<tr>
+      <td><input type="checkbox" class="reminder-check" data-idx="${i}" ${!hasEmail?'disabled title="No email on file"':''}></td>
+      <td><b>${item.child.name}</b><br><span style="font-size:11px;color:var(--text-muted)">#${item.child.id}</span></td>
+      <td>${item.child.guardian}</td>
+      <td>${hasEmail?`<span style="color:var(--primary)">${item.child.email}</span>`:'<span style="color:var(--danger);font-size:12px"><i class="fas fa-exclamation-triangle"></i> No email</span>'}</td>
+      <td><b>${item.vaccine.name}</b></td>
+      <td>${formatDate(item.dueDate)}</td>
+      <td>${statusBadge}</td>
+      <td>${hasEmail?`<button class="btn-sm-custom btn-green" onclick="sendSingleReminder(${item.child.id},${item.vaccine.id})"><i class="fas fa-paper-plane"></i> Send</button>`:'—'}</td>
+    </tr>`;
+  }).join('');
+  // store items for reference
+  window._reminderItems = items;
+}
+
+function toggleAllReminders(cb) {
+  document.querySelectorAll('.reminder-check:not(:disabled)').forEach(c=>c.checked=cb.checked);
+}
+
+async function sendSingleReminder(childId, vaccineId) {
+  const c = DB.children.find(x=>x.id===childId);
+  const v = DB.vaccines.find(x=>x.id===vaccineId);
+  if(!c||!v||!c.email) return;
+  if(!ejsConfig.publicKey) { alert('Please configure EmailJS first in the Email Reminders page.'); return; }
+  const dueDate = new Date(new Date(c.dob).getTime()+v.ageWeeks*7*86400000);
+  try {
+    await emailjs.send(ejsConfig.serviceId, ejsConfig.templateId, {
+      to_email: c.email,
+      guardian_name: c.guardian,
+      child_name: c.name,
+      vaccine_name: v.name,
+      due_date: formatDate(dueDate),
+      clinic_name: 'VacciTrack Clinic'
+    });
+    logReminder(childId, vaccineId, c.email, 'sent');
+    renderReminderTable();
+    renderReminderLog();
+    document.getElementById('reminderSendStatus').textContent = `✓ Reminder sent to ${c.email}`;
+  } catch(err) {
+    logReminder(childId, vaccineId, c.email, 'failed');
+    alert('Failed to send: '+JSON.stringify(err));
+  }
+}
+
+async function sendSelectedReminders() {
+  const checks = document.querySelectorAll('.reminder-check:checked');
+  if(checks.length===0) { alert('Select at least one reminder to send.'); return; }
+  if(!ejsConfig.publicKey) { alert('Please configure EmailJS first.'); return; }
+  const statusEl = document.getElementById('reminderSendStatus');
+  statusEl.textContent = `⏳ Sending 0/${checks.length}...`;
+  let sent=0, failed=0;
+  for(const cb of checks) {
+    const idx = parseInt(cb.dataset.idx);
+    const item = window._reminderItems[idx];
+    if(!item||!item.child.email) continue;
+    const dueDate = new Date(new Date(item.child.dob).getTime()+item.vaccine.ageWeeks*7*86400000);
+    try {
+      await emailjs.send(ejsConfig.serviceId, ejsConfig.templateId, {
+        to_email: item.child.email,
+        guardian_name: item.child.guardian,
+        child_name: item.child.name,
+        vaccine_name: item.vaccine.name,
+        due_date: formatDate(dueDate),
+        clinic_name: 'VacciTrack Clinic'
+      });
+      logReminder(item.child.id, item.vaccine.id, item.child.email, 'sent');
+      sent++;
+    } catch(e) {
+      logReminder(item.child.id, item.vaccine.id, item.child.email, 'failed');
+      failed++;
+    }
+    statusEl.textContent = `⏳ Sending ${sent+failed}/${checks.length}...`;
+    await new Promise(r=>setTimeout(r,300));
+  }
+  renderReminderTable();
+  renderReminderLog();
+  statusEl.textContent = `✓ Done: ${sent} sent${failed>0?`, ${failed} failed`:''}`;
+}
+
+async function sendAllDueReminders() {
+  if(!ejsConfig.publicKey) { alert('Please configure EmailJS first.'); return; }
+  const daysFilter = document.getElementById('reminderDaysFilter').value;
+  const items = getDueItems(daysFilter).filter(i=>i.child.email);
+  if(items.length===0) { alert('No pending items with email addresses for this filter.'); return; }
+  if(!confirm(`Send reminders to ${items.length} parent(s)?`)) return;
+  window._reminderItems = getDueItems(daysFilter);
+  document.querySelectorAll('.reminder-check:not(:disabled)').forEach(c=>c.checked=true);
+  await sendSelectedReminders();
+}
+
+function logReminder(childId, vaccineId, email, status) {
+  if(!DB.reminderLog) DB.reminderLog=[];
+  DB.reminderLog.unshift({childId, vaccineId, email, status, sentAt: new Date().toISOString(), sentBy: currentUser.username});
+  if(DB.reminderLog.length>200) DB.reminderLog=DB.reminderLog.slice(0,200);
+  saveDB();
+}
+function renderReminderLog() {
+  const tbody = document.getElementById('reminderLogTable');
+  if(!tbody) return;
+  const log = DB.reminderLog||[];
+  if(log.length===0){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">No reminders sent yet</td></tr>';return;}
+  tbody.innerHTML = log.slice(0,50).map(l=>{
+    const c=DB.children.find(x=>x.id===l.childId);
+    const v=DB.vaccines.find(x=>x.id===l.vaccineId);
+    return `<tr>
+      <td style="font-size:12px">${new Date(l.sentAt).toLocaleString()}</td>
+      <td>${c?c.name:'Unknown'}</td>
+      <td>${v?v.name:'Unknown'}</td>
+      <td style="font-size:12px">${l.email}</td>
+      <td>${l.status==='sent'?'<span class="badge-custom badge-success"><i class="fas fa-check"></i> Sent</span>':'<span class="badge-custom badge-danger"><i class="fas fa-times"></i> Failed</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+function clearReminderLog() {
+  if(!confirm('Clear all reminder history?')) return;
+  DB.reminderLog=[];saveDB();renderReminderLog();
+}
+
+// ==================== INIT ====================
+loadDB();
+loadEmailjsConfig();
+if(ejsConfig.publicKey) emailjs.init(ejsConfig.publicKey);
+
+function loadEmailjsConfigFields() {
+  document.getElementById('ejsPublicKey').value = ejsConfig.publicKey||'';
+  document.getElementById('ejsServiceId').value = ejsConfig.serviceId||'';
+  document.getElementById('ejsTemplateId').value = ejsConfig.templateId||'';
+}
+</script>
+</body>
+</html>
